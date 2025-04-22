@@ -1,0 +1,100 @@
+# Hub-Enterprise Helm Chart
+
+This document describes how to use Helm chart for simple/easy/fast deployment at OpenShift Container Platform and/or Kubernetes.
+
+Helm Chart for Hub Enterprise and values examples are located here: link:../helm[hub-enterprise]
+
+## How to: Quick Start
+
+* Get the chart from remote repository
+```
+helm repo add ol-helm https://openlegacy.jfrog.io/artifactory/ol-helm --username <username> --password <password>
+helm repo update
+```
+* Prepare your values.yaml files
+
+* Install Helm Chart
+
+```
+$ helm upgrade --install hub-enterprise ol-helm/hub-enterprise \
+    -n hub-enterprise \
+    --values values-examples/kubernetes/keycloak-realm.yaml \
+    --values values-examples/kubernetes/values-example.yaml \
+    --wait --debug --dry-run
+```
+
+## How to: Helm Chart Deployment
+
+### 1. Get the chart from remote repository
+
+There are several different ways you can get the chart you want to install:
+
+* By chart reference: helm install <chart name> ol-helm/<chart name>
+
+* By path to a packaged chart: helm install <chart name> ./<chart file name>-1.0.0.tgz
+
+* By path to an unpacked(tar.gz) chart directory: helm install <chart name> ./<chart directory>
+
+* By absolute URL: helm install <chart name> https://example.com/charts/chart-name-1.0.0.tgz
+
+* By chart reference and repo url: helm install --repo https://example.com/charts/ <chart name> <chart name>
+
+_Hub-Enterprise Chart distribution by OpenLegacy_
+
+Add OpenLegacy Helm repository  to local Helm repos (must have Jfrog user/pass)
+
+API-caller Helm Chart is available at OpenLegacy Helm repository: https://openlegacy.jfrog.io/artifactory/ol-helm
+
+```
+helm repo add ol-helm https://openlegacy.jfrog.io/artifactory/ol-helm --username <username> --password <password>
+helm repo update
+helm install ol-helm/hub-enterprise
+```
+### 1. Get the Chart from archive
+
+OpenLegacy can provide this Helm Chart as an archive for local installation in a form of tar.gz: hub-enterprise-1.0.0.tar.gz
+
+```
+#this will download LATEST version of hub-enterprise.tar.gz chart to current directory
+helm repo add ol-helm https://openlegacy.jfrog.io/artifactory/ol-helm --username <username> --password <password>
+helm repo update
+helm pull ol-helm/hub-enterprise
+```
+### 2. Prepare your values.yaml files
+
+Each Helm Chart has default values.yaml file included. It should be a base of your custom values.yaml file that you will use to override default values.
+
+Default values: https://github.com/openlegacy/hub-enterprise/blob/develop/ops/helm/hub-enterprise/values.yaml
+
+*DANGER: do not share values with 3-parties. Only for internal use within OpenLegacy*
+
+Example values for Kubernetes: link:./values-examples/kubernetes[values-examples/kubernetes]
+
+Example values for OpenShift: link:./values-examples/openshift[values-examples/openshift]
+
+### Adjusting initialDelaySeconds for Readiness and Liveness Probes in Slow Environments
+For customers experiencing delays in slower environments, consider increasing initialDelaySeconds on both the readinessProbe and livenessProbe
+to match the maximum expected initialization or response time. This approach allows Kubernetes to handle the specific needs of varied deployment
+environments without unnecessary restarts or premature routing.
+
+
+### 3. Run Helm install command to deploy chart
+
+You can use this Helm Chart to deploy Hub Enterprise:
+
+```
+$ helm upgrade --install \
+    <helm release name> <actual helm chart location> \
+    -n <namespace> \
+    --values values.yaml
+```
+
+Example:
+
+```
+$ helm upgrade --install hub-enterprise-helm ol-helm/hub-enterprise \
+     -n hub-enterprise-namespace \
+     --values values-examples/openshift/keycloak-realm.yaml \
+     --values values-examples/openshift/values-example.yaml \
+     --wait --timeout=5m --debug --dry-run
+```

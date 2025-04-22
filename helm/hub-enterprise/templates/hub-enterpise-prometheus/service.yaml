@@ -1,0 +1,16 @@
+{{- if .Values.monitoring.deploy }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}-prometheus
+  labels:
+    app: {{ include "hub-enterprise.fullname" . }}-prometheus
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9090
+      targetPort: http
+  selector:
+    app: {{ include "hub-enterprise.fullname" . }}-prometheus
+{{- end -}}

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}
+  labels:
+    app: {{ include "hub-enterprise.fullname" . }}
+spec:
+  type: {{ .Values.hubEnterprise.service.type }}
+  ports:
+    - port: {{ .Values.hubEnterprise.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+{{- if .Values.hubEnterprise.OL_SCREEN_PORT }}
+    - port: {{ .Values.hubEnterprise.OL_SCREEN_PORT }}
+      targetPort: http-screen
+      protocol: TCP
+      name: http-screen
+{{- end }}
+  selector:
+    app: {{ include "hub-enterprise.fullname" . }}

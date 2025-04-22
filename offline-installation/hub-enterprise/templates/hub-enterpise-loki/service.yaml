@@ -1,0 +1,16 @@
+{{- if .Values.monitoring.deploy }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}-loki
+  labels:
+    app: {{ include "hub-enterprise.fullname" . }}-loki
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http
+  selector:
+    app: {{ include "hub-enterprise.fullname" . }}-loki
+{{- end -}}

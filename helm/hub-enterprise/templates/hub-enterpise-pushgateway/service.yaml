@@ -1,0 +1,16 @@
+{{- if .Values.monitoring.deploy }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}-pushgateway
+  labels:
+    app: {{ include "hub-enterprise.fullname" . }}-pushgateway
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9091
+      targetPort: http
+  selector:
+    app: {{ include "hub-enterprise.fullname" . }}-pushgateway
+{{- end -}}

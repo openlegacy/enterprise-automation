@@ -1,0 +1,37 @@
+version: '3.7'
+services:
+  keycloak:
+    image: openlegacy/openlegacy-keycloak:${KEYCLOAK_VERSION}
+    ports:
+      - '8443:8443'
+    container_name: keycloak
+    volumes:
+      - ./realms:/opt/keycloak/data/import
+      - ./keystore:/opt/keycloak/keystore
+      - ./themes:/opt/keycloak/themes/ol
+      - ~/ol-hub-tenant-artifacts:/home/ubuntu/ol-hub-tenant-artifacts
+      - ~/ol-hub-tenant-artifacts/libs:/usr/app/lib
+    command:
+      - "start"
+      - "--import-realm"
+    environment:
+      - KC_HTTP_ENABLED=true
+      - KC_HTTPS_KEY_STORE_FILE=/opt/keycloak/keystore/mykeystore.jks
+      - KC_HTTPS_KEY_STORE_PASSWORD=openlegacy
+      - KC_HTTP_RELATIVE_PATH=/auth
+      - KC_HOSTNAME_STRICT=false
+      - KEYCLOAK_ADMIN=root
+      - KEYCLOAK_ADMIN_PASSWORD=openlegacy
+      - KC_DB=postgres
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=postgres
+      - KC_DB_SCHEMA=keycloak
+      - KC_DB_URL=jdbc:postgresql://postgres-he/postgres
+      - KC_DB_URL_PORT=5433
+
+    networks:
+      - hub-enterprise
+
+networks:
+  hub-enterprise:
+    external: true

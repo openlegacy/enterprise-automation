@@ -1,0 +1,15 @@
+{{- if .Values.monitoring.deploy }}
+{{- $fullName := (list (include "hub-enterprise.fullname" .) "grafana" | join "-") }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: {{ include "hub-enterprise.fullname" . }}
+  name: {{ $fullName }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.grafana.storage.size }}
+{{- end -}}

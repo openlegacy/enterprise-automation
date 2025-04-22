@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  postgres-he:
+    image: postgres:13
+    container_name: postgres-he
+    restart: on-failure
+    ports:
+      - '5433:5432'
+#    volumes:
+#      - ~/postgres-volume:/var/lib/pgsql/data
+    environment:
+      - POSTGRESQL_ADMIN_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - hub-enterprise
+
+networks:
+  hub-enterprise:
+    external: true

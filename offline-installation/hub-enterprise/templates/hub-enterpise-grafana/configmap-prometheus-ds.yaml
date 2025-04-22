@@ -1,0 +1,13 @@
+{{- if .Values.monitoring.deploy }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "hub-enterprise.fullname" . }}-grafana-prometheus-ds"
+  annotations:
+    timestamp: {{ date "20060102150405" now | quote }}
+data:
+{{- range $path, $config := .Values.grafana.prometheus }}
+  {{ $path }}: |-
+{{ $config | indent 4 -}}
+{{- end -}}
+{{- end -}}

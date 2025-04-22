@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+  hub-enterprise-db-migration:
+    image: openlegacy/hub-enterprise-db-migration:${TAG}
+    container_name: hub-enterprise-db-migration
+    environment:
+      - OL_DB_PORT=5433
+      - OL_DB_HOST=host.docker.internal
+      - OL_DB_USER=postgres
+      - OL_DB_PASSWORD=postgres
+      - OL_DB_NAME=postgres
+      - OL_KEYCLOAK_REALM=master
+      - OL_KEYCLOAK_CLIENT_ID=admin-cli
+      - OL_KEYCLOAK_USERNAME=root
+      - OL_KEYCLOAK_PASSWORD=openlegacy
+      - OL_KEYCLOAK_BASE_URL=https://localhost:8443
+      - OL_KEYCLOAK_TRUST_ALL_SSL=true
+    networks:
+      - hub-enterprise
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  hub-enterprise:
+    external: true

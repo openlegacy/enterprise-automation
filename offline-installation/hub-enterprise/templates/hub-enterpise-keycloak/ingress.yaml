@@ -1,0 +1,90 @@
+{{- $fullName := (list (include "hub-enterprise.fullname" .) "keycloak" | join "-") }}
+{{- if eq .Values.keycloak.ingress.type "nginx" -}}
+apiVersion: "networking.k8s.io/v1"
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app: {{ $fullName }}
+  annotations:
+    timestamp: {{ date "20060102150405" now | quote }}
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.keycloak.hostname }}
+      http:
+        paths:
+          - path: /
+            pathType: {{ .Values.keycloak.ingress.pathType }}
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  name: http
+{{- else if eq .Values.keycloak.ingress.type "contour" -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app: {{ $fullName }}
+  annotations:
+    projectcontour.io/websocket-routes: "/"
+spec:
+  rules:
+  - host: {{ .Values.keycloak.hostname }}
+    http:
+      paths:
+      - path: /
+        pathType: {{ .Values.keycloak.ingress.pathType }}
+        backend:
+          service:
+            name: {{ $fullName }}
+            port:
+              name: http
+  tls:
+  - hosts:
+    - {{ .Values.keycloak.hostname }}
+    secretName: {{ .Values.keycloak.ingress.secretName }}
+{{- else if eq .Values.keycloak.ingress.type "openshift" -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    expose: "true"
+    app: {{ $fullName }}
+  name: {{ $fullName }}
+spec:
+  port:
+    targetPort: https
+  to:
+    kind: Service
+    name: {{ $fullName }}
+  tls:
+    destinationCACertificate: |-
+      -----BEGIN CERTIFICATE-----
+      MIIDbTCCAlWgAwIBAgIIc5/FdgK3m1MwDQYJKoZIhvcNAQEMBQAwZTEQMA4GA1UE
+      BhMHVW5rbm93bjEQMA4GA1UECBMHVW5rbm93bjEQMA4GA1UEBxMHVW5rbm93bjET
+      MBEGA1UEChMKT3BlbmxlZ2FjeTELMAkGA1UECxMCb2wxCzAJBgNVBAMTAm9sMB4X
+      DTIzMDkxNDExNDc0NVoXDTMzMDkxMTExNDc0NVowZTEQMA4GA1UEBhMHVW5rbm93
+      bjEQMA4GA1UECBMHVW5rbm93bjEQMA4GA1UEBxMHVW5rbm93bjETMBEGA1UEChMK
+      T3BlbmxlZ2FjeTELMAkGA1UECxMCb2wxCzAJBgNVBAMTAm9sMIIBIjANBgkqhkiG
+      9w0BAQEFAAOCAQ8AMIIBCgKCAQEAusL8VjWQYK+wxOzA7fDoSqBBsSA2tOjNX36E
+      +2x/YDoRB+STNQ9OIBmxwH8uZvTNyM4Lo1qefo3yuse+K7lYhhqct+iTgYsNCE9V
+      Sx2Wgz/cI8e3DAsIzR+wHiKuRHXu1L+nHvjDZyC7v/xMr52XiImGbL1lYoLuEo8Z
+      MWOcj///IZzwARzkfARn6LSkxBTlBOje4HfbcEJnTtxR2dSZ3txuJLD/7YHoHsO5
+      m/SmblZZw6inPJ05DFnrhNmvey00D6kSSDPdZYCyE4pUiJTfnPxZQDQKMGPCIvsI
+      0i2jYFaEkYrz9TxO0VIU4ezPMJ+IoE3PWNpLntvySvk/AuGFIQIDAQABoyEwHzAd
+      BgNVHQ4EFgQUUlyrE6SYKUveoxmFf4LBOKZV6QkwDQYJKoZIhvcNAQEMBQADggEB
+      ADtAZ8pXur5ROnLzEwVqozffmOBNz7131HctrdsSvKwVfRLwPqYzGXLtddHB0ITF
+      JSOHFy4UqPf47f+Us11Hmzez+n4eINXo/44/Wr2sZjnimTQN9+lCL2qleSRXYR3H
+      gnkhNRxWWXILzBlT5nHRUsR5FudbLfv/38Wc9KFt/a1/v+nmSRlcK025rGokYcQh
+      vYN9sNkUCDgtIdilr+n+SmkygI9yE+pR0sJgd8WT7jtT1IILCkajRelia25qz23L
+      VOawib8Tj/NkacNwITch1FYBV7U8xkaao6+6Ws5lG+x48myFu7hHg5wFs9z7Q8bV
+      RXYlk7A9Rioffmp6e/nXHHE=
+      -----END CERTIFICATE-----
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: None
+  wildcardPolicy: None
+{{- end }}

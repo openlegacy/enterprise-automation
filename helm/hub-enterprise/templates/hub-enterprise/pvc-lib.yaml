@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: {{ include "hub-enterprise.fullname" . }}
+  name: {{ include "hub-enterprise.fullname" . }}-lib
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.hubEnterprise.LibStorage.size }}

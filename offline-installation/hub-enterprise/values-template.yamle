@@ -1,0 +1,166 @@
+# Default values for hub-enterprise.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+pullPolicy: IfNotPresent
+
+podAnnotations: {}
+
+monitoring:
+  deploy: false
+
+# securityContext:
+#   privileged: true
+#   capabilities:
+#     drop:
+#     - ALL
+#   readOnlyRootFilesystem: true
+#     # runAsNonRoot: false
+#   allowPrivilegeEscalation: true
+#   seccompProfile:
+#     type: RuntimeDefault
+
+# podSecurityContext:
+#   # runAsNonRoot: false
+# # fsGroup: 2000
+
+resources: {}
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+### Hub Enterprise - chart data
+# optional: deploy postgres with the chart
+postgres:
+  deploy: true
+  image: "postgres:13"
+
+# required
+dbData:
+  OL_DB_PASSWORD: "$OL_DB_PASSWORD"
+  OL_DB_USER: "$OL_DB_USER"
+  OL_DB_HOST: "$OL_DB_HOST"
+  OL_DB_NAME: "$OL_DB_NAME"
+  OL_DB_PORT: "$OL_DB_PORT"
+  JAEGER_SERVICE_NAME: HUB_ENTERPRISE  # do not remove
+
+# required
+keycloak:
+  image: "$KEYCLOAK_IMAGE"
+  hostname: $OL_KEYCLOAK_URL_SHORT  # KEYCLOAK external DNS name
+  ingress:
+    type: $INGRESS_TYPE
+    pathType: Prefix
+  env:
+    KEYCLOAK_ADMIN: "root"
+    KEYCLOAK_ADMIN_PASSWORD: "openlegacy"
+    KC_DB_URL: "jdbc:postgresql://$OL_DB_HOST/$OL_DB_NAME"  # DB address, has to be accessible by pods# DB address, has to be accessible by pods
+    KC_DB_URL_PORT: "$OL_DB_PORT"
+    KC_DB: "postgres"
+    KC_DB_SCHEMA: "keycloak"
+    KC_DB_PASSWORD: "$OL_DB_PASSWORD"
+    KC_DB_USERNAME: "$OL_DB_USER"
+    KC_HOSTNAME_STRICT: "false"
+    KC_HTTPS_KEY_STORE_FILE: "/opt/keycloak/keystore/openlegacy.jks"
+    KC_HTTPS_KEY_STORE_PASSWORD: "openlegacy"
+    KC_HTTP_ENABLED: "true"
+    KC_HTTP_RELATIVE_PATH: "/auth"
+
+# required
+dbMigration:
+  image: "$HUB_ENT_DB_MIGR_IMAGE"
+
+# required
+hubEnterprise:
+  image: "$HUB_ENT_IMAGE"
+  hostname: $OL_HUB_URL_SHORT  # HUB external DNS name
+  OL_SCREEN_PORT: "$OL_SCREEN_PORT"
+  ingress:
+    type: $INGRESS_TYPE
+    pathType: Prefix
+  service:
+    type: ClusterIP
+    port: 80
+  storage:
+    size: 4G
+    mountPath: "/home/ubuntu/ol-hub-tenant-artifacts"
+  LibStorage:
+    size: 1G
+    mountPath: "/usr/app/lib"
+  env:
+    AUTH_DOMAIN: $OL_KEYCLOAK_URL
+    OL_HUB_PK_API_KEY_SIGN: "$OL_HUB_PK_API_KEY_SIGN"
+    OL_HUB_ENCRYPT_SECRET: $OL_HUB_ENCRYPT_SECRET
+    KEYCLOAK_MANAGEMENT_CLIENT_ID: "hub-client"
+    KEYCLOAK_MANAGEMENT_CLIENT_SECRET: "mah60XdjXsGVRyqfi46vn1uQfwlIxb4L"
+
+# optional: credentials for your image registry with HUB-ENTERPRISE images
+loki:
+  image: "$LOKI_IMAGE"
+  hostname: $LOKI_URL_SHORT  # Loki external DNS name
+  ingress:
+    type: $INGRESS_TYPE
+    pathType: Prefix
+  storage:
+    size: 1G
+    mountPath: /loki
+
+grafana:
+  image: "$GRAFANA_IMAGE"
+  hostname: $GRAFANA_URL_SHORT  # Graphana external DNS name
+  ingress:
+    type: $INGRESS_TYPE
+    pathType: Prefix
+  storage:
+    size: 1G
+    mountPath: /var/lib/grafana
+
+prometheus:
+  image: "$PROMETHEUS_IMAGE"
+  storage:
+    size: 1G
+    mountPath: /etc/prometheus
+
+pushgateway:
+  image: "$PUSHGATEWAY_IMAGE"
+  hostname: $PUSHGATEWAY_URL_SHORT  # Pushgateway external DNS name
+  ingress:
+    type: $INGRESS_TYPE
+    pathType: Prefix
+
+imageCredentials:
+  registry: $REGISTRY_URL

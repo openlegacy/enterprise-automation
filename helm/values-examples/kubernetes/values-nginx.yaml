@@ -1,0 +1,40 @@
+### Hub Enterprise - chart data
+
+# credentials for your image registry with HUB-ENTERPRISE images
+imageCredentials:
+  registry: "https://index.docker.io/v1"
+  username: "username"
+  password: "password"
+
+# # optional
+# postgres:
+#   # false if you manage DB yourself, outside this chart
+#   deploy: true
+#   image: postgres
+#   tag: "13"
+
+dbData:
+  OL_DB_PASSWORD: "Aa123456"
+  OL_DB_USER: "oldemo"
+  OL_DB_HOST: hub-enterprise-postgres # DB accessed by pods
+  OL_DB_NAME: postgres
+  OL_DB_PORT: "5432"
+
+keycloak:
+  image: "openlegacy/openlegacy-keycloak:$KEYCLOAK_VERSION"
+  hostname: "keycloak.openlegacy-keycloak.com" # dns
+  ingress:
+    type: nginx
+
+dbMigration:
+  image: "openlegacy/hub-enterprise-db-migration:3.0.1"
+
+hubEnterprise:
+  image: "openlegacy/hub-enterprise:3.0.1"
+  hostname: "openlegacy-hub.com" # dns
+  podSecurityContext:
+    fsGroup: 3000
+  ingress:
+    type: nginx
+
+# !!! redirect URL for realm JSON should be set to: https://OL_HUB_URL/*

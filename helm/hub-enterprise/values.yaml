@@ -1,0 +1,143 @@
+# Default values for hub-enterprise.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+pullPolicy: IfNotPresent
+
+podAnnotations: {}
+
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext: {}
+  # privileged: false
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+### Hub Enterprise - chart data
+# optional: credentials for your image registry with HUB-ENTERPRISE images
+imageCredentials:
+  registry: "openlegacy"
+  username: ""
+  password: ""
+
+# optional: deploy postgres with the chart
+postgres:
+  deploy: false
+  image: "postgres:13"
+
+# required
+dbData:
+  OL_DB_PASSWORD: postgres
+  OL_DB_USER: postgres
+  OL_DB_HOST: hub-enterprise-postgres
+  OL_DB_NAME: postgres
+  OL_DB_PORT: "5432"
+  JAEGER_SERVICE_NAME: HUB_ENTERPRISE  # dont remove
+
+# required
+keycloak:
+  image: "openlegacy/openlegacy-keycloak"
+  tag: "22.0.3"
+  ingress:
+    type: nginx
+    pathType: Prefix
+    hostname: "localhost"  # KEYCLOAK external DNS name
+  env:
+    KEYCLOAK_ADMIN: "root"
+    KEYCLOAK_ADMIN_PASSWORD: "openlegacy"
+    KC_DB_URL: "jdbc:postgresql://hub-enterprise-postgres/postgres"  # DB address, has to be accessible by pods# DB address, has to be accessible by pods
+    KC_DB_URL_PORT: "5432"
+    KC_DB: "postgres"
+    KC_DB_SCHEMA: "keycloak"
+    KC_DB_PASSWORD: "postgres"
+    KC_DB_USERNAME: "postgres"
+    KC_HOSTNAME_STRICT: "false"
+    KC_HTTPS_KEY_STORE_FILE: "/opt/keycloak/keystore/openlegacy.jks"
+    KC_HTTPS_KEY_STORE_PASSWORD: "openlegacy"
+    KC_HTTP_ENABLED: "true"
+    KC_HTTP_RELATIVE_PATH: "/auth"
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  realm:  # for simplicity, you can take this to separate values.yaml file
+    config.json: |-
+      {
+        "realm data": "example"
+      }
+
+dbMigration:
+  image: "openlegacy/hub-enterprise-db-migration"
+  tag: "2.2.0"
+
+# required
+hubEnterprise:
+  image: "openlegacy/hub-enterprise"
+  tag: "2.2.0"
+  ingress:
+    type: nginx
+    pathType: Prefix
+    hostname: "localhost"  # HUB external DNS name
+  service:
+    type: ClusterIP
+    port: 80
+  storage:
+    size: 4G
+    mountPath: "/home/ubuntu/ol-hub-tenant-artifacts"
+  LibStorage:
+    size: 1G
+    mountPath: "/usr/app/lib"
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+    requests:
+      cpu: 500m
+      memory: 512Mi

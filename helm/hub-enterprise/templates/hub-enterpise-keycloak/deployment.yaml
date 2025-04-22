@@ -1,0 +1,93 @@
+{{- $fullName := (list (include "hub-enterprise.fullname" .) "keycloak" | join "-") }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "hub-enterprise.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "hub-enterprise.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        timestamp: {{ date "20060102150405" now | quote }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ $fullName }}
+        {{- include "hub-enterprise.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ include "hub-enterprise.fullname" . }}-pull-secret
+      serviceAccountName: {{ include "hub-enterprise.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          envFrom:
+          - secretRef:
+              name: {{ $fullName }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.keycloak.image }}"
+          {{- if .Values.keycloak.realm }}
+          args:
+            - "start"
+            - "--import-realm"
+          {{- end }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 120
+            httpGet:
+              path: /auth/realms/master
+              port: 8080
+              scheme: HTTP
+          readinessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 120
+            httpGet:
+              path: /auth/realms/master
+              port: 8080
+              scheme: HTTP
+          securityContext:
+              allowPrivilegeEscalation: false
+          resources:
+            {{- toYaml .Values.keycloak.resources | nindent 12 }}
+          {{- if .Values.keycloak.realm }}
+          volumeMounts:
+          - name: {{ $fullName }}
+            mountPath: "/opt/keycloak/data/import/config.json"
+            subPath: "config.json"
+          {{- end }}
+      {{- if .Values.keycloak.realm }}
+      volumes:
+      - name: {{ $fullName }}
+        configMap:
+          name: {{ $fullName }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

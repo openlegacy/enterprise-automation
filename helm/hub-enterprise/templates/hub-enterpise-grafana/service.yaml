@@ -1,0 +1,16 @@
+{{- if .Values.monitoring.deploy }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}-grafana
+  labels:
+    app: {{ include "hub-enterprise.fullname" . }}-grafana
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+  selector:
+    app: {{ include "hub-enterprise.fullname" . }}-grafana
+{{- end -}}

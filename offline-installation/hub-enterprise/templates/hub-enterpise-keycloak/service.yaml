@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}-keycloak
+  labels:
+    app: {{ include "hub-enterprise.fullname" . }}-keycloak
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: https
+      port: 443
+      targetPort: https
+  selector:
+    app: {{ include "hub-enterprise.fullname" . }}-keycloak

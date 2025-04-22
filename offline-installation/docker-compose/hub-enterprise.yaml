@@ -1,0 +1,63 @@
+services:
+  hub-enterprise:
+    container_name: hub-enterprise
+    image:  $HUB_ENT_REGISTRY_IMAGE_TAG
+    networks:
+      - hub-enterprise
+    ports:
+      - '8080:8080'
+    environment:
+      - AUTH_DOMAIN=https://$OL_HUB_URL:8443
+      - OL_DB_PORT=$OL_DB_PORT
+      - OL_DB_HOST=$OL_DB_HOST
+      - OL_DB_USER=$POSTGRES_USER
+      - OL_DB_NAME=$OL_DB_NAME
+      - OL_DB_PASSWORD=$POSTGRES_PASSWORD
+      - OL_HUB_URL=http://$OL_HUB_URL:8080
+      - KEYCLOAK_BASE_URL=https://keycloak:8443
+      - JAEGER_SERVICE_NAME=hub-ee
+      - OL_HUB_PK_API_KEY_SIGN=$OL_HUB_PK_API_KEY_SIGN
+      - OL_HUB_ENCRYPT_SECRET=$OL_HUB_ENCRYPT_SECRET
+      - KEYCLOAK_MANAGEMENT_CLIENT_ID=hub-client
+      - KEYCLOAK_MANAGEMENT_CLIENT_SECRET=mah60XdjXsGVRyqfi46vn1uQfwlIxb4L
+      - HUB_IAM_URL=https://keycloak:8443/auth/realms/ol-hub
+      - BACKOFFICE_IAM_URL=https://keycloak:8443/auth/realms/ol-hub
+    profiles:
+      - default
+    volumes:
+      - $VOLUME_HUB_ENT
+      - $VOLUME_HUB_ENT_LIBS
+  ol-screen:
+    container_name: hub-enterprise-screen
+    image:  $HUB_ENT_REGISTRY_IMAGE_TAG
+    profiles:
+      - ol-screen-profile
+    ports:
+      - "$OL_SCREEN_PORT:$OL_SCREEN_PORT"
+      - '8080:8080'
+    environment:
+      - AUTH_DOMAIN=https://$OL_HUB_URL:8443
+      - OL_DB_PORT=$OL_DB_PORT
+      - OL_DB_HOST=$OL_DB_HOST
+      - OL_DB_USER=$POSTGRES_USER
+      - OL_DB_NAME=$OL_DB_NAME
+      - OL_DB_PASSWORD=$POSTGRES_PASSWORD
+      - OL_HUB_URL=http://localhost:8080
+      - KEYCLOAK_BASE_URL=https://keycloak:8443
+      - JAEGER_SERVICE_NAME=hub-ee
+      - OL_HUB_PK_API_KEY_SIGN=$OL_HUB_PK_API_KEY_SIGN
+      - OL_HUB_ENCRYPT_SECRET=$OL_HUB_ENCRYPT_SECRET
+      - HUB_IAM_URL=https://keycloak:8443/auth/realms/ol-hub
+      - BACKOFFICE_IAM_URL=https://keycloak:8443/auth/realms/ol-hub
+      - KEYCLOAK_MANAGEMENT_CLIENT_ID=hub-client
+      - KEYCLOAK_MANAGEMENT_CLIENT_SECRET=mah60XdjXsGVRyqfi46vn1uQfwlIxb4L
+    volumes:
+      - $VOLUME_HUB_ENT
+      - $VOLUME_HUB_ENT_LIBS
+    networks:
+      - hub-enterprise
+networks:
+  hub-enterprise:
+    external: true
+volumes:
+  ol-hub-data:

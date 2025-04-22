@@ -1,0 +1,70 @@
+{{- if .Values.monitoring.deploy }}
+{{- $fullName := (list (include "hub-enterprise.fullname" .) "loki" | join "-") }}
+{{- if eq .Values.loki.ingress.type "nginx" -}}
+apiVersion: "networking.k8s.io/v1"
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app: {{ $fullName }}
+  annotations:
+    timestamp: {{ date "20060102150405" now | quote }}
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
+spec:
+  rules:
+    - host: {{ .Values.loki.hostname }}
+      http:
+        paths:
+          - path: /
+            pathType: {{ .Values.loki.ingress.pathType }}
+            backend:
+              service:
+                name: {{ $fullName }}
+                port: 
+                  name: http
+{{- else if eq .Values.loki.ingress.type "contour" -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app: {{ $fullName }}
+  annotations:
+    projectcontour.io/websocket-routes: "/"
+spec:
+  rules:
+  - host: {{ .Values.loki.hostname }}
+    http:
+      paths:
+      - path: /
+        pathType: {{ .Values.loki.ingress.pathType }}
+        backend:
+          service: 
+            name: {{ $fullName }}
+            port: 
+              name: http
+  tls:
+  - hosts:
+    - {{ .Values.loki.hostname }}
+    secretName: {{ .Values.loki.ingress.secretName }}
+{{- else if eq .Values.loki.ingress.type "openshift" -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    expose: "true"
+    app: {{ $fullName }}
+  name: {{ $fullName }}
+spec:
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: {{ $fullName }}
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: None
+  wildcardPolicy: None
+{{- end }}
+{{- end -}}

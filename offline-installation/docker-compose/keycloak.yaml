@@ -1,0 +1,30 @@
+services:
+  keycloak:
+    image: $KEYCLOAK_REGISTRY_IMAGE_TAG
+    ports:
+      - 8443:8443
+    container_name: keycloak
+    volumes:
+      - $KEYCLOAK_VOLUME
+    command:
+      - "start"
+      - "--import-realm"
+    environment:
+      - KC_HTTP_ENABLED=true
+      - KC_HTTPS_KEY_STORE_FILE=/opt/keycloak/keystore/openlegacy.jks
+      - KC_HTTPS_KEY_STORE_PASSWORD=openlegacy
+      - KC_HTTP_RELATIVE_PATH=/auth
+      - KC_HOSTNAME_STRICT=false
+      - KEYCLOAK_ADMIN=root
+      - KEYCLOAK_ADMIN_PASSWORD=openlegacy
+      - KC_DB=postgres
+      - KC_DB_USERNAME=$POSTGRES_USER
+      - KC_DB_PASSWORD=$POSTGRES_PASSWORD
+      - KC_DB_SCHEMA=keycloak
+      - KC_DB_URL=jdbc:postgresql://$OL_DB_HOST/$OL_DB_NAME
+      - KC_DB_URL_PORT=$OL_DB_PORT
+    networks:
+      - hub-enterprise
+networks:
+  hub-enterprise:
+    external: true

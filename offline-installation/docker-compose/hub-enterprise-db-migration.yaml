@@ -1,0 +1,22 @@
+services:
+  hub-enterprise-db-migration:
+    container_name: hub-enterprise-db-migration
+    image: $HUB_ENT_DB_MIGR_REGISTRY_IMAGE_TAG
+    networks:
+      - hub-enterprise
+    environment:
+      - OL_DB_PORT=$OL_DB_PORT
+      - OL_DB_HOST=$OL_DB_HOST
+      - OL_DB_USER=$POSTGRES_USER
+      - OL_DB_PASSWORD=$POSTGRES_PASSWORD
+      - OL_DB_NAME=$OL_DB_NAME
+      - JAEGER_SERVICE_NAME=hub-ee
+      - OL_KEYCLOAK_REALM=master
+      - OL_KEYCLOAK_CLIENT_ID=admin-cli
+      - OL_KEYCLOAK_USERNAME=root
+      - OL_KEYCLOAK_PASSWORD=openlegacy
+      - OL_KEYCLOAK_BASE_URL=https://localhost:8443
+      - OL_KEYCLOAK_TRUST_ALL_SSL=true
+networks:
+  hub-enterprise:
+    external: true

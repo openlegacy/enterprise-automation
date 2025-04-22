@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}-db-migration-job
+spec:
+  backoffLimit: 10
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: {{ include "hub-enterprise.fullname" . }}-db-migration
+    spec:
+      serviceAccountName: {{ include "hub-enterprise.fullname" . }}
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: {{ include "hub-enterprise.fullname" . }}-pull-secret
+      containers:
+      - name: {{ include "hub-enterprise.fullname" . }}-job
+        image: "{{ .Values.dbMigration.image }}"
+        imagePullPolicy: {{ .Values.pullPolicy }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        envFrom:
+        - secretRef:
+            name: {{ include "hub-enterprise.fullname" . }}-db-migration-job

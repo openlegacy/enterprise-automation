@@ -1,0 +1,13 @@
+{{- if .Values.keycloak.realm }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}-keycloak
+  annotations:
+    timestamp: {{ date "20060102150405" now | quote }}
+data:
+{{- range $path, $config := .Values.keycloak.realm }}
+  {{ $path }}: |-
+{{ $config | indent 4 -}}
+{{- end -}}
+{{- end -}}

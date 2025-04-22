@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hub-enterprise.fullname" . }}
+  labels:
+    {{- include "hub-enterprise.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "hub-enterprise.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        timestamp: {{ date "20060102150405" now | quote }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "hub-enterprise.fullname" . }}
+        {{- include "hub-enterprise.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ include "hub-enterprise.fullname" . }}-pull-secret
+      serviceAccountName: {{ include "hub-enterprise.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          envFrom:
+          - secretRef:
+              name: {{ include "hub-enterprise.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.hubEnterprise.image }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+           {{- if .Values.hubEnterprise.OL_SCREEN_PORT }}
+            - name: http-screen
+              containerPort: {{ .Values.hubEnterprise.OL_SCREEN_PORT }}
+              protocol: TCP
+            {{- end }}
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            {{- toYaml .Values.hubEnterprise.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ .Values.hubEnterprise.storage.mountPath }}
+              name: {{ include "hub-enterprise.fullname" . }}
+              readOnly: false
+            - mountPath: {{ .Values.hubEnterprise.LibStorage.mountPath }}
+              name: {{ include "hub-enterprise.fullname" . }}-lib
+              readOnly: false
+          securityContext:
+            allowPrivilegeEscalation: false
+      volumes:
+      - name: {{ include "hub-enterprise.fullname" . }}
+        persistentVolumeClaim:
+          claimName: {{ include "hub-enterprise.fullname" . }}
+      - name: {{ include "hub-enterprise.fullname" . }}-lib
+        persistentVolumeClaim:
+          claimName: {{ include "hub-enterprise.fullname" . }}-lib
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
