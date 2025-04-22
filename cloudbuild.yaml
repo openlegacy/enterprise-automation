@@ -1,0 +1,46 @@
+steps:
+  - name: gcr.io/cloud-builders/git
+    args:
+      - "-c"
+      - >
+        git clone --branch $BRANCH_NAME
+        https://$$GITHUB_TOKEN@github.com/openlegacy/enterprise-automation.git
+        /workspace/enterprise-automation
+    id: Git-Clone
+    entrypoint: bash
+    secretEnv:
+      - GITHUB_TOKEN
+
+  - name: "bash:latest"
+    args:
+      - "-c"
+      - |
+        cd /workspace/enterprise-automation
+        echo "🔍 Installing required tools (jq, curl)..."
+        apt-get update && apt-get install -y jq curl
+        echo "🔍 Running script.sh..."
+        chmod +x script.sh
+        ./script.sh
+    id: Run-Installer-Script
+
+  - name: gcr.io/cloud-builders/curl
+    args:
+      - "-c"
+      - |
+        curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\": \"*Build:* $BUILD_ID\n*Environment:* $TRIGGER_NAME\n*Branch:* $BRANCH_NAME\n*Hub Enterprise installation completed.*\"}" \
+          $$SLACK_WEBHOOK
+    id: Slack-Notification
+    entrypoint: bash
+    secretEnv:
+      - SLACK_WEBHOOK
+
+timeout: 1800s
+options:
+  logging: CLOUD_LOGGING_ONLY
+availableSecrets:
+  secretManager:
+    - versionName: projects/qa-automation-hub-api-poc/secrets/GITHUB_TOKEN/versions/latest
+      env: GITHUB_TOKEN
+    - versionName: projects/qa-automation-hub-api-poc/secrets/SLACK_WEBHOOK/versions/latest
+      env: SLACK_WEBHOOK
