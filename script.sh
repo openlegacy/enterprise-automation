@@ -72,9 +72,6 @@ else
     printf "%s" "$ANSWERS" | bash "$offline_install_sh"
 fi
 
-# Increase wait time from 1 minute to 5 minutes
-echo "Waiting for 1 minutes to ensure services are fully available..."
-sleep 60
 
 RAND_NAME=$(tr -dc 'a-z0-9' < /dev/urandom | head -c 29)
 RAND_NAME="$(tr -dc 'a-z' < /dev/urandom | head -c 1)$RAND_NAME"
