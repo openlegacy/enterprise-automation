@@ -17,7 +17,7 @@ steps:
       - |
         # Update package lists and install required tools
         apt-get update
-        apt-get install -y curl jq apt-transport-https gnupg2 software-properties-common wget tar unzip
+        apt-get install -y curl jq apt-transport-https gnupg2 software-properties-common wget tar unzip gettext
 
         # Install kubectl
         curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
@@ -27,7 +27,7 @@ steps:
 
         # Install OpenShift CLI (oc)
         OC_VERSION="4.13.0"
-        wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OC_VERSION}/openshift-client-linux.tar.gz
+        wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/$${OC_VERSION}/openshift-client-linux.tar.gz
         tar -xzf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
         chmod +x /usr/local/bin/oc
         rm openshift-client-linux.tar.gz
@@ -43,8 +43,14 @@ steps:
         # Install OpenSSL
         apt-get install -y openssl
 
-        # Navigate to the directory and run the script
+        # Navigate to the directory
         cd /workspace/enterprise-automation
+
+        # Login to OpenShift first (this sets the kubectl context)
+        oc login --token=sha256~E4OrOfDhRvBZfxQgVyOe2dV7EYw0SdpGa1ULvljPYbQ --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443 --insecure-skip-tls-verify=true
+
+
+        # Make script executable and run it
         chmod +x script.sh
         ./script.sh
     id: Run-Installer-Script

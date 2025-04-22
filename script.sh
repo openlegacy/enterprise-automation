@@ -62,6 +62,8 @@ postgres
 n
 y
 "
+echo "Waiting for 2 minutes before proceeding..."
+sleep 120
 
 # Run the installer script
 offline_install_sh="offline-installation/installer-helm.sh"
