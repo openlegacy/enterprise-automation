@@ -1,18 +1,18 @@
 # Get the latest and one-before-latest tag for openlegacy/openlegacy-keycloak
 KEYCLOAK_IMAGE_REPO="openlegacy/openlegacy-keycloak"
-KEYCLOAK_TAGS=($(curl -s "https://registry.hub.docker.com/v2/repositories/${KEYCLOAK_IMAGE_REPO}/tags?page_size=4&page=1&ordering=last_updated" | jq -r '.results[].name'))
+KEYCLOAK_TAGS=($(curl -s -k "https://registry.hub.docker.com/v2/repositories/${KEYCLOAK_IMAGE_REPO}/tags?page_size=4&page=1&ordering=last_updated" | jq -r '.results[].name'))
 KEYCLOAK_LATEST_TAG="${KEYCLOAK_TAGS[0]}"
 KEYCLOAK_IMAGE="${KEYCLOAK_IMAGE_REPO}:${KEYCLOAK_LATEST_TAG}"
 # Get the latest and one-before-latest tag for openlegacy/hub-enterprise-db-migration
 DB_MIGR_IMAGE_REPO="openlegacy/hub-enterprise-db-migration"
-DB_MIGR_TAGS=($(curl -s "https://registry.hub.docker.com/v2/repositories/${DB_MIGR_IMAGE_REPO}/tags?page_size=4&page=1&ordering=last_updated" | jq -r '.results[].name'))
+DB_MIGR_TAGS=($(curl -s -k "https://registry.hub.docker.com/v2/repositories/${DB_MIGR_IMAGE_REPO}/tags?page_size=4&page=1&ordering=last_updated" | jq -r '.results[].name'))
 DB_MIGR_LATEST_TAG="${DB_MIGR_TAGS[1]}"
 DB_MIGR_ONE_BEFORE_LATEST_TAG="${DB_MIGR_TAGS[2]}"
 HUB_ENT_DB_MIGR_IMAGE="${DB_MIGR_IMAGE_REPO}:${DB_MIGR_LATEST_TAG}"
 HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE="${DB_MIGR_IMAGE_REPO}:${DB_MIGR_ONE_BEFORE_LATEST_TAG}"
 
 # Get the latest and one-before-latest tag for openlegacy/hub-enterprise with '-rhel' only
-tmp_tags=$(curl -s "https://registry.hub.docker.com/v2/repositories/openlegacy/hub-enterprise/tags?page_size=20&page=1&ordering=last_updated" | jq -r '.results[].name')
+tmp_tags=$(curl -s -k "https://registry.hub.docker.com/v2/repositories/openlegacy/hub-enterprise/tags?page_size=20&page=1&ordering=last_updated" | jq -r '.results[].name')
 HUB_ENT_RHEL_TAGS=($(echo "$tmp_tags" | grep -- '-rhel'))
 HUB_ENT_LATEST_TAG="${HUB_ENT_RHEL_TAGS[0]}"
 HUB_ENT_ONE_BEFORE_LATEST_TAG="${HUB_ENT_RHEL_TAGS[2]}"
@@ -72,8 +72,9 @@ else
     printf "%s" "$ANSWERS" | bash "$offline_install_sh"
 fi
 
-echo "Waiting for 2 minutes before proceeding..."
-sleep 120
+# Increase wait time from 1 minute to 5 minutes
+echo "Waiting for 1 minutes to ensure services are fully available..."
+sleep 60
 
 RAND_NAME=$(tr -dc 'a-z0-9' < /dev/urandom | head -c 29)
 RAND_NAME="$(tr -dc 'a-z' < /dev/urandom | head -c 1)$RAND_NAME"
@@ -81,19 +82,42 @@ RAND_NAME="$(tr -dc 'a-z' < /dev/urandom | head -c 1)$RAND_NAME"
 API_URL="https://hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth-service/api/v1/api-keys?account=false"
 
 # Use x-api-key header instead of Authorization: Bearer
-KEYCLOAK_TOKEN_RESPONSE=$(curl -s --location 'https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth/realms/ol-hub/protocol/openid-connect/token' \
-  --header 'accept: application/json' \
-  --header 'content-type: application/x-www-form-urlencoded' \
-  --data-urlencode 'username=ol-hub' \
-  --data-urlencode 'password=openlegacy' \
-  --data-urlencode 'client_id=hub-spa' \
-  --data-urlencode 'grant_type=password')
+MAX_RETRIES=5
+retry_count=0
+KEYCLOAK_TOKEN_RESPONSE=""
+
+while [ $retry_count -lt $MAX_RETRIES ] && [ -z "$KEYCLOAK_TOKEN_RESPONSE" ]; do
+  echo "Attempting to get Keycloak token (attempt $(($retry_count + 1))/$MAX_RETRIES)..."
+  
+  KEYCLOAK_TOKEN_RESPONSE=$(curl -s -k --location 'https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth/realms/ol-hub/protocol/openid-connect/token' \
+    --header 'accept: application/json' \
+    --header 'content-type: application/x-www-form-urlencoded' \
+    --data-urlencode 'username=ol-hub' \
+    --data-urlencode 'password=openlegacy' \
+    --data-urlencode 'client_id=hub-spa' \
+    --data-urlencode 'grant_type=password')
+  
+  if [ -z "$KEYCLOAK_TOKEN_RESPONSE" ] || ! echo "$KEYCLOAK_TOKEN_RESPONSE" | grep -q "access_token"; then
+    echo "Failed to get token, retrying in 30 seconds..."
+    KEYCLOAK_TOKEN_RESPONSE=""
+    sleep 30
+  else
+    echo "Successfully obtained Keycloak token"
+  fi
+  
+  retry_count=$((retry_count + 1))
+done
+
+if [ -z "$KEYCLOAK_TOKEN_RESPONSE" ]; then
+  echo "Failed to get Keycloak token after $MAX_RETRIES attempts. Exiting."
+  exit 1
+fi
 
 echo "Keycloak Token Response: $KEYCLOAK_TOKEN_RESPONSE"
 
 BEARER_TOKEN=$(echo "$KEYCLOAK_TOKEN_RESPONSE" | jq -r '.access_token')
 
-response=$(curl -s -w "\n%{http_code}" \
+response=$(curl -s -k -w "\n%{http_code}" \
   -X POST "$API_URL" \
   -H "Accept: application/json, text/plain, */*" \
   -H "Content-Type: application/json" \

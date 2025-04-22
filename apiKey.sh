@@ -5,19 +5,42 @@ RAND_NAME="$(tr -dc 'a-z' < /dev/urandom | head -c 1)$RAND_NAME"
 API_URL="https://hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth-service/api/v1/api-keys?account=false"
 
 # Use x-api-key header instead of Authorization: Bearer
-KEYCLOAK_TOKEN_RESPONSE=$(curl -s --location 'https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth/realms/ol-hub/protocol/openid-connect/token' \
-  --header 'accept: application/json' \
-  --header 'content-type: application/x-www-form-urlencoded' \
-  --data-urlencode 'username=ol-hub' \
-  --data-urlencode 'password=openlegacy' \
-  --data-urlencode 'client_id=hub-spa' \
-  --data-urlencode 'grant_type=password')
+MAX_RETRIES=5
+retry_count=0
+KEYCLOAK_TOKEN_RESPONSE=""
+
+while [ $retry_count -lt $MAX_RETRIES ] && [ -z "$KEYCLOAK_TOKEN_RESPONSE" ]; do
+  echo "Attempting to get Keycloak token (attempt $(($retry_count + 1))/$MAX_RETRIES)..."
+  
+  KEYCLOAK_TOKEN_RESPONSE=$(curl -s -k --location 'https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth/realms/ol-hub/protocol/openid-connect/token' \
+    --header 'accept: application/json' \
+    --header 'content-type: application/x-www-form-urlencoded' \
+    --data-urlencode 'username=ol-hub' \
+    --data-urlencode 'password=openlegacy' \
+    --data-urlencode 'client_id=hub-spa' \
+    --data-urlencode 'grant_type=password')
+  
+  if [ -z "$KEYCLOAK_TOKEN_RESPONSE" ] || ! echo "$KEYCLOAK_TOKEN_RESPONSE" | grep -q "access_token"; then
+    echo "Failed to get token, retrying in 30 seconds..."
+    KEYCLOAK_TOKEN_RESPONSE=""
+    sleep 30
+  else
+    echo "Successfully obtained Keycloak token"
+  fi
+  
+  retry_count=$((retry_count + 1))
+done
+
+if [ -z "$KEYCLOAK_TOKEN_RESPONSE" ]; then
+  echo "Failed to get Keycloak token after $MAX_RETRIES attempts. Exiting."
+  exit 1
+fi
 
 echo "Keycloak Token Response: $KEYCLOAK_TOKEN_RESPONSE"
 
 BEARER_TOKEN=$(echo "$KEYCLOAK_TOKEN_RESPONSE" | jq -r '.access_token')
 
-response=$(curl -s -w "\n%{http_code}" \
+response=$(curl -s -k -w "\n%{http_code}" \
   -X POST "$API_URL" \
   -H "Accept: application/json, text/plain, */*" \
   -H "Content-Type: application/json" \
@@ -34,3 +57,4 @@ else
   echo "API key creation failed. Status code: $status_code"
   echo "Response: $response_body"
 fi
+
