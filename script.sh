@@ -40,6 +40,10 @@ sed -i "s|^HUB_ENT_IMAGE=.*|HUB_ENT_IMAGE=\"$HUB_ENT_IMAGE_ONE_BEFORE\"|" "$targ
 
 echo "Updated $target_conf with new image tags."
 
+# Log in to OpenShift before running the installer
+#oc login --username=qaautomation --password='y4#fB7C9Nf1dgbtd3s1' --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
+oc login --token=sha256~lKjgvT-yuNiDUxwMICwyeGeDGTDCn9-YdKU2-YBWru4 --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
+
 ANSWERS="y
 openlegacy
 n
@@ -59,6 +63,7 @@ n
 y
 "
 
+# Run the installer script
 offline_install_sh="offline-installation/installer-helm.sh"
 if [ -x "$offline_install_sh" ]; then
     printf "%s" "$ANSWERS" | "$offline_install_sh"
@@ -66,4 +71,33 @@ else
     printf "%s" "$ANSWERS" | bash "$offline_install_sh"
 fi
 
+RAND_NAME=$(tr -dc 'a-z0-9' < /dev/urandom | head -c 29)
+RAND_NAME="$(tr -dc 'a-z' < /dev/urandom | head -c 1)$RAND_NAME"
+
+# After installation, make the API request
+API_URL="https://hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth-service/api/v1/api-keys?account=false"
+
+# Use x-api-key header instead of Authorization: Bearer
+KEYCLOAK_TOKEN_RESPONSE=$(curl -s --location 'https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth/realms/ol-hub/protocol/openid-connect/token' \
+  --header 'accept: application/json' \
+  --header 'content-type: application/x-www-form-urlencoded' \
+  --data-urlencode 'username=ol-hub' \
+  --data-urlencode 'password=openlegacy' \
+  --data-urlencode 'client_id=hub-spa' \
+  --data-urlencode 'grant_type=password')
+
+BEARER_TOKEN=$(echo "$KEYCLOAK_TOKEN_RESPONSE" | jq -r '.access_token')
+
+status_code=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST "$API_URL" \
+  -H "Accept: application/json, text/plain, */*" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $BEARER_TOKEN" \
+  --data-raw '{"name":"'$RAND_NAME'","description":"enterprise-qa-team-automation"}')
+
+if [ "$status_code" -eq 201 ]; then
+  echo "API key creation succeeded (201 Created)"
+else
+  echo "API key creation failed. Status code: $status_code"
+fi
 

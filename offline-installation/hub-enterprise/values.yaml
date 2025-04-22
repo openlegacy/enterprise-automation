@@ -80,7 +80,7 @@ dbData:
 
 # required
 keycloak:
-  image: "openlegacy/openlegacy-keycloak:26.1.2"
+  image: "openlegacy/openlegacy-keycloak:26.1.4"
   hostname: hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com  # KEYCLOAK external DNS name
   ingress:
     type: openshift
@@ -102,11 +102,11 @@ keycloak:
 
 # required
 dbMigration:
-  image: "openlegacy/hub-enterprise-db-migration:3.0.6"
+  image: "openlegacy/hub-enterprise-db-migration:3.0.9"
 
 # required
 hubEnterprise:
-  image: "openlegacy/hub-enterprise:3.0.6-rhel"
+  image: "openlegacy/hub-enterprise:3.0.8.3-rhel"
   hostname: hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com  # HUB external DNS name
   OL_SCREEN_PORT: "1512"
   ingress:
@@ -123,8 +123,8 @@ hubEnterprise:
     mountPath: "/usr/app/lib"
   env:
     AUTH_DOMAIN: https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com
-    OL_HUB_PK_API_KEY_SIGN: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC4ncOVmEUK/2m3\nYEdHDkE+g/cepzqzDy1WXKLRo4QG5xjM0gXIJ+YBILdi7UqSj8cngCmpVTAZ/pvD\njbDa1eQdlPNuaJCWe4/ctBLtLYcGnQ4FF0wb0pOj9TMajhLDlzyQ5wdc24sfJ7K+\nu6+MTbsKenWWFmBt1PNJQ6cyTQ3ml21vrXUltO6bj6LP8vCPsV0rUaYUbt8t80Af\nl8UY0DwOpyxT0Nc8r3nOy/Pvg2jFBbncBivqu3J5fay7HK1DzASD/PNPEQjxPesn\neZiTWFUHb8WkOf2PAxc4U6gwtVZ012Sn/rvT3YKhtRzEDEKLRQlDpWaZFiEyoG8q\nEGUcLAKZAgMBAAECggEACcjm0FtxMVuHLV5veK8jOx6AbwH7BPmFdCHVyVmqyjje\nYiCxiMHAmYez4IzmGm1/ZzMOQjjPI1mQxOUSHg8fF4hI/K2TGD61ScPLiwGSOgIB\n97gb4w+enp6E1l/4U6CE58Mu6zeBoKWYfi5xZ/TIuI30BH/sHXYfbN8mke5uka2W\n3fIQVaPKG/Uoz+qJpNb/DxKYXUFOveO2HJUUfalpfQIVszU05mhBUhbLXZAO7eRw\n/H671YDTrl0AZ2Mv+fZTwDlwAXew3cb6grtyeNFQajuSjvm1umsuMFmu1aNwM8b0\nUT9gFhFADogBt9FnDnrVXwzeNmQwHPZ9zmUIsMHpDwKBgQDlS1XQWzDjd3PCqgS8\nIHmqhtXePwni6ZxEyVNhsRl605BA5OGOgatRxcOyoTrcK5lsVrqP+cXVQSFRU0ZO\n4rDz5Ue3pcosNEr9G5U6NsEyTmhTKfTr7K63+JR1uCgG6lm71XUhuhum0pbvlVtg\nGt8IWqLecn9lFcrTCqOJTDWz/wKBgQDOHk3SI5L8h7IhvIMvzOGMiLlJ48pTCQOW\n0v3jVQBCp8r+Dt9bVORpTxOSUEdoTiWrYikhNjn1R1huZEsCpcXG/S23jzWEmBwk\n8CWULj+P1V41YEU89fMwhTgp3G71KvaFnYhJn5wwNnEbw9pG3Xvd6S0vbr/SnfzM\nhAnosENpZwKBgE02ejZIjwT6M6QoxqFnOjE/aIOHrNeZnULYnNh338GpvpjrujzX\n044cz5K2knCTyf1ek0JqdMEkRojxRurHkZj/64+fJ56NGXd0M2NADvzWxHDE3zIX\nKJrQ/YVKt0fk4MTM073AwxEBN0yEehm50sMoalIIMngix4MbwQg5/peXAoGAbZ/g\nc+tHudfR/e9tNncZXs04/vuQGCmrJwSA0+/Ze5oSdJ0kXkcAVKIiHqdj0y39CvHi\nPi/BE5smhVACNR5F2le9gOtB44ujLGItGmqek7k/qdPR/2IwPZYdEOaUfQCkrNvk\nKIQjZeEOt12rMhWKU7Q4vAmDLFmqont3abKVp/ECgYAHhBAmDm0YDAzO/eiQ5J89\npW3IZ2++zMDq6WA5HNhIAJ6k8QErz5r3TdyiJN0vl5G5CGN05vrSUsAjeZxksSHA\nWrKcnOQEnfOxkXx8Kh/HUFW7OS1WnGnXVwl22G80NcaDdFBH+h1SublU+24O7vzc\nXNM59T7m1L4ZBXSggDF9zg==\n-----END PRIVATE KEY-----\n"
-    OL_HUB_ENCRYPT_SECRET: KsUG7FScepnyV4fHBEin9BiWJAEypl3l
+    OL_HUB_PK_API_KEY_SIGN: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDGXSIl1TKMNvaN\nHKjTMOtw2Op61jhLAecQYPCnPea/I7W9TWu3xNoRRghjSUr0qWwLpDD9zNKTrYVF\nYRVajxjJEw5R9a+OzkG9mat+Lh1/ZL9EMsKA49hJK89j4KU7Jjm0gUsCMICC8ybF\nzA2Xp93KW6350+S8w4bxjytT4IaVm1xouYJjzNULa0G15IEMX3xcWCql7xVMWEYR\ny+dKEiZZ0SdDyFCZXaKaZJEBpBtc/k9PS3GqJoVK4tfzSFSaBSVF+qwjGswuUuv5\nHMjF8W2m1Cz5CAmhE20ZyQQxI3swF8FSg9hOSNn/zSkF/A2cgiekOBypr/f0H2fz\n8WJXpcIRAgMBAAECggEABsz73hnvehbq0Eb0o0v0sHlhXZ2BT9IEgN9f9M3mnrQ7\n134DZMklFE1HPZcuUJHL7GDAVL08VXeQH4Mu8xw/lGo4thbjIlVgM97EPkbYuEzF\nEXKfkEFvgX+05CbYJ11dwlph7tTonQS21jZzG1lUHWtT/UIWYCHgeyDmUoF6v7+E\nsVp/hKGDZQtWyzkItQIVk5T0QZ+vsy2/OzXeWcYBBiWGR8LiZeKuL2IQegG6WuR9\nsmwyCk1jVu1T7Ldla2ohP+IYF4RmoHhiLPnwqoi9+5JESul4ih6uPVUp+NTuj506\nGoBPVrlvH0o13GzRshIXePeMdOs1kU6KzCqgE+8heQKBgQD2pWWUpjyeLVjvI/mH\n8kGVQ/zChXLplqnot4sLFgicFIEuXHJUSXHoIiopo/Z8CpPkQFWErdUI5p/hYK2z\nX/iyILzTSDFYX6FYIvskkp3KBEo5rSfO9zDSLQ0b9gCL51PgZ/QebTLz1ucUqpCn\nf0EnzRAVmgkJyPkegOKTU1y2KQKBgQDN4vr1krhGL3Af49CTjT6UFot6SnLR0Lfu\naYYOGvWcMtIcGxY4YfiCeiL6OKseBPFHnrQEmV9/hHjfLqjpzA1QaGHIUlxE7FSA\n7L+u0/VelRvVHIiwZ/oBreUhq2N93rNcjbajpMD6LDjSlhrC20Q2kNdXUYuPC1z2\n3WIYtluZqQKBgGvSvmePjKxxkpFonqtponYIdLTs9eFb9gdARc6g4T6qUBbeXzSt\nrtgWJ2xwu05aqXB9F2WbQKhVectjIkxqRiRI34NV6gyCMdx/3l6MoeIwoeo44lA+\nC9+1xidVEcQXarmNeFDc2At1BSwprHcs0GT/5morHoxiiVVmbqaNKNiRAoGBAKfG\n1jeUjrIzKi3ymiADtAE9tf+794FfkuOn/mQ0N/5Hs8zPjfX4cGjzWtmJoHhgErcI\nby5oRdhGfbFx9pg/foIN7dEuvJ418E73nuS7OXMQE5RBImqO8L65lMUxQ2xpNMSx\nfyovskqsCsohJEGyKQ5GThWMECxLWECb+7qjsFWxAoGAN23nhSMwEFZQTnxvLaPF\nB80X2x+nz9tHOAlYl/ZHvfPJKBvBkwsxdDNIw0QZPtdiIotrUi/tPhziywnHK2f9\nei9mZD8ZaOVaZJVIPNKtIm0qSl6tdqvQribd99HuWaa/6eyRQ5EyBSeDb2gwUB48\nmfrivky7EA3XM31X0kbGin0=\n-----END PRIVATE KEY-----\n"
+    OL_HUB_ENCRYPT_SECRET: v9veGOYzJEfAZrrZXMxXpCHBlbwHo5jz
     KEYCLOAK_MANAGEMENT_CLIENT_ID: "hub-client"
     KEYCLOAK_MANAGEMENT_CLIENT_SECRET: "mah60XdjXsGVRyqfi46vn1uQfwlIxb4L"
 
