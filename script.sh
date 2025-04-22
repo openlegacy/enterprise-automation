@@ -42,7 +42,7 @@ echo "Updated $target_conf with new image tags."
 
 # Log in to OpenShift before running the installer
 #oc login --username=qaautomation --password='y4#fB7C9Nf1dgbtd3s1' --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
-oc login --token=sha256~lKjgvT-yuNiDUxwMICwyeGeDGTDCn9-YdKU2-YBWru4 --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
+oc login --token=sha256~E4OrOfDhRvBZfxQgVyOe2dV7EYw0SdpGa1ULvljPYbQ --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
 
 ANSWERS="y
 openlegacy

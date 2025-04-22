@@ -11,17 +11,44 @@ steps:
     secretEnv:
       - GITHUB_TOKEN
 
-  - name: "bash:latest"
+  - name: "ubuntu:latest"
     args:
       - "-c"
       - |
+        # Update package lists and install required tools
+        apt-get update
+        apt-get install -y curl jq apt-transport-https gnupg2 software-properties-common wget tar unzip
+
+        # Install kubectl
+        curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+        echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
+        apt-get update
+        apt-get install -y kubectl
+
+        # Install OpenShift CLI (oc)
+        OC_VERSION="4.13.0"
+        wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OC_VERSION}/openshift-client-linux.tar.gz
+        tar -xzf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
+        chmod +x /usr/local/bin/oc
+        rm openshift-client-linux.tar.gz
+        echo "Installed OpenShift CLI version:"
+        oc version
+
+        # Install Helm
+        curl https://baltocdn.com/helm/signing.asc | apt-key add -
+        echo "deb https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+        apt-get update
+        apt-get install -y helm
+
+        # Install OpenSSL
+        apt-get install -y openssl
+
+        # Navigate to the directory and run the script
         cd /workspace/enterprise-automation
-        echo "🔍 Installing required tools (jq, curl)..."
-        apt-get update && apt-get install -y jq curl
-        echo "🔍 Running script.sh..."
         chmod +x script.sh
         ./script.sh
     id: Run-Installer-Script
+    entrypoint: bash
 
   - name: gcr.io/cloud-builders/curl
     args:
