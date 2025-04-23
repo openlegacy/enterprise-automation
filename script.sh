@@ -44,6 +44,10 @@ sed -i "s|^HUB_ENT_IMAGE=.*|HUB_ENT_IMAGE=\"$HUB_ENT_IMAGE_ONE_BEFORE\"|" "$targ
 echo "Updated $target_conf with new image tags."
 bash ./installScript.sh "$KEYCLOAK_IMAGE" "$HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE" "$HUB_ENT_IMAGE_ONE_BEFORE" "$HUB_ENT_ONE_BEFORE_LATEST_TAG"
 
+echo "Waiting 5 minutes before proceeding with upgrade..."
+sleep 300
+
+
 target_conf="offline-installation/upgrade-helm.conf"
 sed -i "s|^KEYCLOAK_IMAGE=.*|KEYCLOAK_IMAGE=\"$KEYCLOAK_IMAGE\"|" "$target_conf"
 sed -i "s|^HUB_ENT_DB_MIGR_IMAGE=.*|HUB_ENT_DB_MIGR_IMAGE=\"$HUB_ENT_DB_MIGR_IMAGE\"|" "$target_conf"
