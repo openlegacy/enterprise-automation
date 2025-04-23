@@ -35,7 +35,10 @@ echo "One before latest DB Migration image: $HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE"
 echo "Latest DB Migration image: $HUB_ENT_DB_MIGR_IMAGE"
 
 oc login --token=sha256~E9R1Ru3Ank6l69L8XhkW5KGcy1wwW6YE7G5W37Cm_cg --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
-
+# Delete the helm release named hub-enterprise
+echo "Deleting helm release hub-enterprise..."
+helm delete hub-enterprise -n qa-team
+sleep 60 
 
 target_conf="offline-installation/installer-helm.conf"
 sed -i "s|^KEYCLOAK_IMAGE=.*|KEYCLOAK_IMAGE=\"$KEYCLOAK_IMAGE\"|" "$target_conf"
@@ -44,9 +47,8 @@ sed -i "s|^HUB_ENT_IMAGE=.*|HUB_ENT_IMAGE=\"$HUB_ENT_IMAGE_ONE_BEFORE\"|" "$targ
 echo "Updated $target_conf with new image tags."
 bash ./installScript.sh "$KEYCLOAK_IMAGE" "$HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE" "$HUB_ENT_IMAGE_ONE_BEFORE" "$HUB_ENT_ONE_BEFORE_LATEST_TAG"
 
-echo "Waiting 5 minutes before proceeding with upgrade..."
-sleep 300
-
+echo "Waiting 3 minutes before proceeding with upgrade..."
+sleep 180   
 
 target_conf="offline-installation/upgrade-helm.conf"
 sed -i "s|^KEYCLOAK_IMAGE=.*|KEYCLOAK_IMAGE=\"$KEYCLOAK_IMAGE\"|" "$target_conf"
