@@ -35,7 +35,6 @@ declare -r BANNER_STYLE="
 "
 # Paths and defaults
 declare -r BASE_PATH="$(pwd)/offline-installation"
-echo "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss: $BASE_PATH"
 
 declare -r HELM_CHARTS_ARCHIVE="${BASE_PATH}/hub-enterprise.tgz"
 declare -r HELM_CHART_NAME="hub-enterprise"
@@ -169,8 +168,7 @@ verify_context() {
     current_context=$(kubectl config current-context) || {
         err "Failed to get current kubernetes context"
     }
-        echo "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss: $BASE_PATH"
-
+   
     printf "Current kubernetes context is ${BLUE}%s${NC}\nDo you want to proceed? (y/n) " "$current_context"
     read -r context_is_correct
 

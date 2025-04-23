@@ -27,8 +27,8 @@ echo "One before latest Hub Enterprise image: $HUB_ENT_IMAGE_ONE_BEFORE"
 
 # Remove any newlines or carriage returns from the variables
 
-# Update offline-installation/upgrade-docker.conf with the new image tags
-target_conf="offline-installation/upgrade-docker.conf"
+# Update offline-installation/upgrade-helm.conf with the new image tags
+target_conf="offline-installation/upgrade-helm.conf"
 
 # Remove any newlines or carriage returns from the variables
 KEYCLOAK_IMAGE=$(echo "$KEYCLOAK_IMAGE" | tr -d '\r\n')
@@ -36,22 +36,42 @@ HUB_ENT_DB_MIGR_IMAGE=$(echo "$HUB_ENT_DB_MIGR_IMAGE" | tr -d '\r\n')
 HUB_ENT_IMAGE=$(echo "$HUB_ENT_IMAGE" | tr -d '\r\n')
 
 # Use sed to update the values in-place
-sed -i "s|^KEYCLOAK_REGISTRY_IMAGE_TAG=.*|KEYCLOAK_REGISTRY_IMAGE_TAG=\"$KEYCLOAK_IMAGE\"|" "$target_conf"
-sed -i "s|^HUB_ENT_DB_MIGR_REGISTRY_IMAGE_TAG=.*|HUB_ENT_DB_MIGR_REGISTRY_IMAGE_TAG=\"$HUB_ENT_DB_MIGR_IMAGE\"|" "$target_conf"
-sed -i "s|^HUB_ENT_REGISTRY_IMAGE_TAG=.*|HUB_ENT_REGISTRY_IMAGE_TAG=\"$HUB_ENT_IMAGE\"|" "$target_conf"
+sed -i "s|^KEYCLOAK_IMAGE=.*|KEYCLOAK_IMAGE=\"$KEYCLOAK_IMAGE\"|" "$target_conf"
+sed -i "s|^HUB_ENT_DB_MIGR_IMAGE=.*|HUB_ENT_DB_MIGR_IMAGE=\"$HUB_ENT_DB_MIGR_IMAGE\"|" "$target_conf"
+sed -i "s|^HUB_ENT_IMAGE=.*|HUB_ENT_IMAGE=\"$HUB_ENT_IMAGE\"|" "$target_conf"
 
 echo "Updated $target_conf with new image tags."
 
 # Log in to OpenShift before running the installer
 oc login --token=sha256~E9R1Ru3Ank6l69L8XhkW5KGcy1wwW6YE7G5W37Cm_cg --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
 
-# Run the upgrade script with the upgrade config
-# offline_upgrade_sh="offline-installation/upgrade-helm.sh"
-# if [ -x "$offline_upgrade_sh" ]; then
-#     CONFIG_FILE="$target_conf" "$offline_upgrade_sh"
-# else
-#     CONFIG_FILE="$target_conf" bash "$offline_upgrade_sh"
-# fi
+
+ANSWERS="y
+qa-team
+n
+$KEYCLOAK_IMAGE
+$HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE
+$HUB_ENT_IMAGE_ONE_BEFORE
+https://hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com
+https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com
+2
+qa-team
+hub-enterprise-postgres
+5432
+postgres
+postgres
+postgres
+n
+y
+"
+
+offline_upgrade_sh="offline-installation/upgrade-helm.sh"
+if [ -x "$offline_upgrade_sh" ]; then
+    printf "%s" "$ANSWERS" | "$offline_upgrade_sh"
+else
+    printf "%s" "$ANSWERS" | bash "$offline_upgrade_sh"
+fi
+
 
 # # Call the API key creation script if needed
 # bash ./createApikey.sh

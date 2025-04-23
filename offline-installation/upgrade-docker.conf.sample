@@ -1,0 +1,15 @@
+DOWNLOAD_DOCKER_IMAGES=false # true if we need to pull docker images
+REGISTRY_URL="" # Docker registry url e.g openlegacy-registry.jfrog.io
+REGISTRY_USERNAME="" # Docker registry username
+REGISTRY_PASSWORD="" # Docker registry password
+OL_DB_HOST="postgres" # Postgres host (has to be accessible by pods)
+OL_DB_NAME="postgres" # Postgres name
+OL_DB_PORT=5432 # Postgres port
+POSTGRES_USER="postgres" # Postgres username
+POSTGRES_PASSWORD="" # Postgres password
+POSTGRESQL_ADMIN_PASSWORD="" # Postgres admin password
+KEYCLOAK_REGISTRY_IMAGE_TAG="openlegacy/openlegacy-keycloak:26.0.7" # Name and tag of the Keycloak image, DOWNLOAD_DOCKER_IMAGES should be true
+HUB_ENT_DB_MIGR_REGISTRY_IMAGE_TAG="openlegacy/hub-enterprise-db-migration:2.8.0" # Name and tag of the Hub Enterprise DB migration image, DOWNLOAD_DOCKER_IMAGES should be true
+HUB_ENT_REGISTRY_IMAGE_TAG="openlegacy/hub-enterprise:2.8.0" # Name and tag of the Hub Enterprise image, DOWNLOAD_DOCKER_IMAGES should be true
+POSTGRES_REGISTRY_IMAGE_TAG="postgres:13" # Name and tag of the Postgres DB image, DOWNLOAD_DOCKER_IMAGES should be true
+OL_HUB_URL="" # URL which will be used to access the OpenLegacy Hub Web UI
