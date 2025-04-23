@@ -25,9 +25,9 @@ echo "One before latest DB Migration image: $HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE"
 echo "Latest Hub Enterprise image: $HUB_ENT_IMAGE"
 echo "One before latest Hub Enterprise image: $HUB_ENT_IMAGE_ONE_BEFORE"
 
-# Remove any newlines or carriage returns from the variables
+#Remove any newlines or carriage returns from the variables
 
-# Update offline-installation/upgrade-helm.conf with the new image tags
+#Update offline-installation/upgrade-helm.conf with the new image tags
 target_conf="offline-installation/upgrade-helm.conf"
 
 # Remove any newlines or carriage returns from the variables
@@ -74,5 +74,5 @@ fi
 
 
 # # Call the API key creation script if needed
-# bash ./createApikey.sh
+bash ./createApikey.sh "$HUB_ENT_LATEST_TAG"
 

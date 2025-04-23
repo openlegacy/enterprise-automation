@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Input parameters
-LOCAL_FILE_PATH="./h3270-1.3.3.4.jar"
+LOCAL_FILE_PATH="./libs/h3270-1.3.3.4.jar"
 NAMESPACE="qa-team"  # If namespace is not provided, use "default"
 
 if [ -z "$LOCAL_FILE_PATH" ]; then

@@ -1,8 +1,22 @@
+assert() {
+  if ! eval "$1"; then
+    echo "Assertion failed: $2" >&2
+    exit 1
+  fi
+}
+
+HUB_ENT_TAG=$1
+# Remove -rhel suffix if present
+HUB_ENT_TAG=${HUB_ENT_TAG%-rhel}
+echo "HUB_ENT_TAG: $HUB_ENT_TAG"
 
 RAND_NAME=$(tr -dc 'a-z0-9' < /dev/urandom | head -c 29)
 RAND_NAME="$(tr -dc 'a-z' < /dev/urandom | head -c 1)$RAND_NAME"
 # After installation, make the API request
-API_URL="https://hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com/auth-service/api/v1/api-keys?account=false"
+API_BASE_URL="https://hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com"
+API_URL_VERSION="$API_BASE_URL/backend/version"
+API_URL_CREATE_KEY="$API_BASE_URL/auth-service/api/v1/api-keys?account=false"
+
 
 # Use x-api-key header instead of Authorization: Bearer
 MAX_RETRIES=5
@@ -36,12 +50,23 @@ if [ -z "$KEYCLOAK_TOKEN_RESPONSE" ]; then
   exit 1
 fi
 
-echo "Keycloak Token Response: $KEYCLOAK_TOKEN_RESPONSE"
 
 BEARER_TOKEN=$(echo "$KEYCLOAK_TOKEN_RESPONSE" | jq -r '.access_token')
 
+# --- Version check logic ---
+VERSION_RESPONSE=$(curl -s -k \
+  -H "Accept: application/json, text/plain, */*" \
+  -H "Authorization: Bearer $BEARER_TOKEN" \
+  "$API_URL_VERSION")
+
+HUB_VERSION=$(echo "$VERSION_RESPONSE" | jq -r '."hub-version"')
+echo "Hub version from API: $HUB_VERSION"
+echo "Expected HUB_ENT_TAG: $HUB_ENT_TAG"
+
+assert "[[ \"$HUB_VERSION\" == \"$HUB_ENT_TAG\" ]]" "Hub version mismatch: expected $HUB_ENT_TAG, got $HUB_VERSION"
+
 response=$(curl -s -k -w "\n%{http_code}" \
-  -X POST "$API_URL" \
+  -X POST "$API_URL_CREATE_KEY" \
   -H "Accept: application/json, text/plain, */*" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $BEARER_TOKEN" \
@@ -57,4 +82,5 @@ else
   echo "API key creation failed. Status code: $status_code"
   echo "Response: $response_body"
 fi
+assert "[[ \"$status_code\" -eq 201 ]]" "API key creation failed. Status code: $status_code"
 
