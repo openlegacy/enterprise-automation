@@ -41,39 +41,39 @@ sed -i "s|^KEYCLOAK_IMAGE=.*|KEYCLOAK_IMAGE=\"$KEYCLOAK_IMAGE\"|" "$target_conf"
 sed -i "s|^HUB_ENT_DB_MIGR_IMAGE=.*|HUB_ENT_DB_MIGR_IMAGE=\"$HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE\"|" "$target_conf"
 sed -i "s|^HUB_ENT_IMAGE=.*|HUB_ENT_IMAGE=\"$HUB_ENT_IMAGE_ONE_BEFORE\"|" "$target_conf"
 
-# echo "Updated $target_conf with new image tags."
+echo "Updated $target_conf with new image tags."
 
-# # Log in to OpenShift before running the installer
-# #oc login --username=qaautomation --password='y4#fB7C9Nf1dgbtd3s1' --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
-# oc login --token=sha256~E9R1Ru3Ank6l69L8XhkW5KGcy1wwW6YE7G5W37Cm_cg --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
+# Log in to OpenShift before running the installer
+#oc login --username=qaautomation --password='y4#fB7C9Nf1dgbtd3s1' --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
+oc login --token=sha256~E9R1Ru3Ank6l69L8XhkW5KGcy1wwW6YE7G5W37Cm_cg --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
 
-# ANSWERS="y
-# openlegacy
-# n
-# $KEYCLOAK_IMAGE
-# $HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE
-# $HUB_ENT_IMAGE_ONE_BEFORE
-# https://hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com
-# https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com
-# 2
-# qa-team
-# hub-enterprise-postgres
-# 5432
-# postgres
-# postgres
-# postgres
-# n
-# y
-# "
+ANSWERS="y
+openlegacy
+n
+$KEYCLOAK_IMAGE
+$HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE
+$HUB_ENT_IMAGE_ONE_BEFORE
+https://hub-enterprise-qa-team.apps.cluster07.ol-ocp.sdk-hub.com
+https://hub-enterprise-keycloak-qa-team.apps.cluster07.ol-ocp.sdk-hub.com
+2
+qa-team
+hub-enterprise-postgres
+5432
+postgres
+postgres
+postgres
+n
+y
+"
 
-# # Run the installer script
-# offline_install_sh="offline-installation/installer-helm.sh"
-# if [ -x "$offline_install_sh" ]; then
-#     printf "%s" "$ANSWERS" | "$offline_install_sh"
-# else
-#     printf "%s" "$ANSWERS" | bash "$offline_install_sh"
-# fi
+# Run the installer script
+offline_install_sh="offline-installation/installer-helm.sh"
+if [ -x "$offline_install_sh" ]; then
+    printf "%s" "$ANSWERS" | "$offline_install_sh"
+else
+    printf "%s" "$ANSWERS" | bash "$offline_install_sh"
+fi
 
-# Call the API key creation script
-# bash ./createApikey.sh "$HUB_ENT_ONE_BEFORE_LATEST_TAG"
+Call the API key creation script
+bash ./createApikey.sh "$HUB_ENT_ONE_BEFORE_LATEST_TAG"
 

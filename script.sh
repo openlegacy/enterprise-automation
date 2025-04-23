@@ -1,5 +1,6 @@
-# Run installation script first
+echo "Running installation script"
 bash ./installScript.sh
 
-# Run upgrade script
+
+echo "Running upgrade script"
 bash ./upgradeScript.sh
