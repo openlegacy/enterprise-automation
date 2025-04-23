@@ -72,6 +72,5 @@ else
 fi
 
 
-# # Call the API key creation script if needed
 bash ./createApikey.sh "$HUB_ENT_LATEST_TAG"
 

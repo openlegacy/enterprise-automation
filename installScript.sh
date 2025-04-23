@@ -74,6 +74,6 @@ else
     printf "%s" "$ANSWERS" | bash "$offline_install_sh"
 fi
 
-Call the API key creation script
+
 bash ./createApikey.sh "$HUB_ENT_ONE_BEFORE_LATEST_TAG"
 
