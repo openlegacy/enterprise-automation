@@ -29,6 +29,6 @@ else
     printf "%s" "$ANSWERS" | bash "$offline_upgrade_sh"
 fi
 
-
+echo "Upgrade process completed. Creating API key for $HUB_ENT_LATEST_TAG"
 bash ./createApikey.sh "$HUB_ENT_LATEST_TAG"
 

@@ -31,6 +31,6 @@ else
     printf "%s" "$ANSWERS" | bash "$offline_install_sh"
 fi
 
-
+echo "Installation process completed. Creating API key for $HUB_ENT_ONE_BEFORE_LATEST_TAG"
 bash ./createApikey.sh "$HUB_ENT_ONE_BEFORE_LATEST_TAG"
 
