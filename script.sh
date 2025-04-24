@@ -34,7 +34,7 @@ echo "Latest Hub Enterprise image: $HUB_ENT_IMAGE"
 echo "One before latest DB Migration image: $HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE"
 echo "Latest DB Migration image: $HUB_ENT_DB_MIGR_IMAGE"
 
-oc login --token=sha256~E9R1Ru3Ank6l69L8XhkW5KGcy1wwW6YE7G5W37Cm_cg --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
+oc login --token=sha256~nx9KrE4P5XVTzmteQTyXRjvSRwpRD_4GXjvsU1q0D30 --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443
 # Delete the helm release named hub-enterprise
 echo "Deleting helm release hub-enterprise..."
 helm delete hub-enterprise -n qa-team

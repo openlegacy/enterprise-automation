@@ -49,10 +49,21 @@ steps:
         # Login to OpenShift first (this sets the kubectl context)
         oc login --token=sha256~E4OrOfDhRvBZfxQgVyOe2dV7EYw0SdpGa1ULvljPYbQ --server=https://api.cluster07.ol-ocp.sdk-hub.com:6443 --insecure-skip-tls-verify=true
 
-
-        # Make script executable and run it
+        # Make script executable and run it with error handling
         chmod +x script.sh
+
+        # Run script and capture exit code
         ./script.sh
+        SCRIPT_EXIT_CODE=$?
+
+        # Write exit code to a file for later steps to access
+        echo $SCRIPT_EXIT_CODE > /workspace/script_exit_code.txt
+
+        # Return the script's exit code
+        if [ $SCRIPT_EXIT_CODE -ne 0 ]; then
+          echo "Script failed with exit code $SCRIPT_EXIT_CODE"
+          exit $SCRIPT_EXIT_CODE
+        fi
     id: Run-Installer-Script
     entrypoint: bash
 
@@ -60,9 +71,30 @@ steps:
     args:
       - "-c"
       - |
+        # Determine if the previous step succeeded
+        SCRIPT_EXIT_CODE=0
+        if [ -f /workspace/script_exit_code.txt ]; then
+          SCRIPT_EXIT_CODE=$(cat /workspace/script_exit_code.txt)
+        fi
+
+        # Set the status message based on the exit code
+        if [ "$SCRIPT_EXIT_CODE" -eq 0 ]; then
+          STATUS="✅ Success"
+          MSG="Hub Enterprise installation completed successfully."
+        else
+          STATUS="❌ Failed"
+          MSG="Hub Enterprise installation failed with exit code $SCRIPT_EXIT_CODE. Please check the logs for details."
+        fi
+
+        # Send notification with status
         curl -X POST -H 'Content-type: application/json' \
-          --data "{\"text\": \"*Build:* $BUILD_ID\n*Environment:* $TRIGGER_NAME\n*Branch:* $BRANCH_NAME\n*Hub Enterprise installation completed.*\"}" \
+          --data "{\"text\": \"*Build:* $BUILD_ID\n*Environment:* $TRIGGER_NAME\n*Branch:* $BRANCH_NAME\n*Status:* $STATUS\n$MSG\"}" \
           $$SLACK_WEBHOOK
+
+        # If script failed, propagate the error to make the build step fail
+        if [ "$SCRIPT_EXIT_CODE" -ne 0 ]; then
+          exit $SCRIPT_EXIT_CODE
+        fi
     id: Slack-Notification
     entrypoint: bash
     secretEnv:
