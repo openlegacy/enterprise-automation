@@ -38,6 +38,7 @@ oc login --token=sha256~nx9KrE4P5XVTzmteQTyXRjvSRwpRD_4GXjvsU1q0D30 --server=htt
 # Delete the helm release named hub-enterprise
 echo "Deleting helm release hub-enterprise..."
 helm delete hub-enterprise -n qa-team
+echo "Waiting 60 seconds before proceeding"
 sleep 60 
 
 target_conf="offline-installation/installer-helm.conf"
