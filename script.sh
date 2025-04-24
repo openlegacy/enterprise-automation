@@ -1,3 +1,13 @@
+set -o pipefail  # Propagate errors through pipes
+
+# Function to handle errors
+handle_error() {
+  local exit_code=$1
+  local error_message=$2
+  echo "ERROR: $error_message (Exit code: $exit_code)" >&2
+  exit $exit_code
+}
+
 # Keycloak
 KEYCLOAK_IMAGE_REPO="openlegacy/openlegacy-keycloak"
 KEYCLOAK_TAGS=($(curl -s -k "https://registry.hub.docker.com/v2/repositories/${KEYCLOAK_IMAGE_REPO}/tags?page_size=6&page=1&ordering=last_updated" | jq -r '.results[].name'))
@@ -46,7 +56,13 @@ sed -i "s|^KEYCLOAK_IMAGE=.*|KEYCLOAK_IMAGE=\"$KEYCLOAK_IMAGE\"|" "$target_conf"
 sed -i "s|^HUB_ENT_DB_MIGR_IMAGE=.*|HUB_ENT_DB_MIGR_IMAGE=\"$HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE\"|" "$target_conf"
 sed -i "s|^HUB_ENT_IMAGE=.*|HUB_ENT_IMAGE=\"$HUB_ENT_IMAGE_ONE_BEFORE\"|" "$target_conf"
 echo "Updated $target_conf with new image tags."
+
+# Run install script and capture exit code
 bash ./installScript.sh "$KEYCLOAK_IMAGE" "$HUB_ENT_DB_MIGR_IMAGE_ONE_BEFORE" "$HUB_ENT_IMAGE_ONE_BEFORE" "$HUB_ENT_ONE_BEFORE_LATEST_TAG"
+INSTALL_EXIT_CODE=$?
+if [ $INSTALL_EXIT_CODE -ne 0 ]; then
+    handle_error $INSTALL_EXIT_CODE "Installation script failed"
+fi
 
 echo "Waiting 3 minutes before proceeding with upgrade..."
 sleep 180   
@@ -56,5 +72,15 @@ sed -i "s|^KEYCLOAK_IMAGE=.*|KEYCLOAK_IMAGE=\"$KEYCLOAK_IMAGE\"|" "$target_conf"
 sed -i "s|^HUB_ENT_DB_MIGR_IMAGE=.*|HUB_ENT_DB_MIGR_IMAGE=\"$HUB_ENT_DB_MIGR_IMAGE\"|" "$target_conf"
 sed -i "s|^HUB_ENT_IMAGE=.*|HUB_ENT_IMAGE=\"$HUB_ENT_IMAGE\"|" "$target_conf"
 echo "Updated $target_conf with new image tags."
+
+# Run upgrade script and capture exit code
 bash ./upgradeScript.sh "$KEYCLOAK_IMAGE" "$HUB_ENT_DB_MIGR_IMAGE" "$HUB_ENT_IMAGE" "$HUB_ENT_LATEST_TAG"
+UPGRADE_EXIT_CODE=$?
+if [ $UPGRADE_EXIT_CODE -ne 0 ]; then
+    handle_error $UPGRADE_EXIT_CODE "Upgrade script failed"
+fi
+
+# If we get here, both scripts completed successfully
+echo "Installation and upgrade completed successfully"
+exit 0
 

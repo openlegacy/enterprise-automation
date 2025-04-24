@@ -3,6 +3,16 @@ HUB_ENT_DB_MIGR_IMAGE="$2"
 HUB_ENT_IMAGE="$3"
 HUB_ENT_LATEST_TAG="$4"
 
+set -o pipefail  # Propagate errors through pipes
+
+# Function to handle errors
+handle_error() {
+  local exit_code=$1
+  local error_message=$2
+  echo "ERROR: $error_message (Exit code: $exit_code)" >&2
+  exit $exit_code
+}
+
 ANSWERS="y
 qa-team
 n
@@ -32,3 +42,10 @@ fi
 echo "Upgrade process completed. Creating API key for $HUB_ENT_LATEST_TAG"
 bash ./createApikey.sh "$HUB_ENT_LATEST_TAG"
 
+API_KEY_EXIT_CODE=$?
+if [ $API_KEY_EXIT_CODE -ne 0 ]; then
+    handle_error $API_KEY_EXIT_CODE "API key creation failed with assert error"
+fi
+
+# If we get here, both scripts completed successfully
+exit 0
